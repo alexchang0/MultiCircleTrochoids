@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<!---
+    Multi-Circle Trochoid Animation
+    Author: Alexander Y. Chang
+    Copyright (c) 2020
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Multi-Circle Trochoid Animation</title>
+    <link rel="shortcut icon" type="image/x-icon" href="mcht-logo765-s.ico" />    
+    <style type="text/css">
+      canvas {
+          border: 1px solid black;
+          background: black;
+      }
+      body {
+          margin: 0;
+          font-family: monospace;
+          line-height: 10px;
+          padding-bottom: 1px;
+          margin-bottom: 1px;
+      }
+      input, textarea {
+          // font-size: 200%;
+          font-family: monospace;
+          margin-bottom: 1px;
+      }
+      p.a {
+          font-family: "Times New Roman", Times, serif;
+      }
+      p.b {
+          font-family: Arial, Helvetica, sans-serif;
+      }
+      p.c {
+          font-family: monospace;
+          line-height: 0px;
+      }
+      div.a {
+          line-height: 10px;
+      }
+      p
+      {
+          margin: 0px;
+          padding: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <center>
+      <div class="a">
+        <h1>Multi-Circle Trochoid Animation</h1>
+        <h3>2020 NorCal STEM Fair ID: 48473</h3>
+      </div>
+      <hr>
+    </center>
+    <form id="radiusFormID" action="/action_page.php">
+      <p class="c" style="margin-bottom:7px; line-height:1px">&nbsp Circle &nbsp&nbsp0
+        &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp1
+        &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp2
+        &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp3
+        &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp4
+        &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp5
+      </p>
+      <p class="c">
+        &nbsp Radius: <input type="text" size="5" name="radius 1" value="6">&nbsp&nbsp
+      <input type="text" size="5" name="radius 2" value="5">&nbsp&nbsp
+      <input type="text" size="5" name="radius 3" value="4">&nbsp&nbsp
+      <input type="text" size="5" name="radius 4" value="1">&nbsp&nbsp
+      <input type="text" size="5" name="radius 5" value="0">&nbsp&nbsp
+      <input type="text" size="5" name="radius 6" value="0">&nbsp <--- Can be negative
+      </p>
+    </form>
+    <form id="speedFormID" action="/action_page.php">
+      <p class="c">
+        &nbsp Speed Ratio: &nbsp&nbsp&nbsp
+        <input type="text" size="5" name="speed 2" value="4">&nbsp&nbsp
+        <input type="text" size="5" name="speed 3" value="-3">&nbsp&nbsp
+        <input type="text" size="5" name="speed 4" value="0">&nbsp&nbsp
+        <input type="text" size="5" name="speed 5" value="0">&nbsp&nbsp
+        <input type="text" size="5" name="speed 6" value="0">&nbsp <--- First zero terminates circle sequence.
+      </p>
+    </form>
+    <form id="parametersFormID" action="/action_page.php">
+      <p>
+        &nbsp Scale: <input type="text" size="3" name="Scale" value="1">&nbsp
+        Color Factor: <input type="text" size="3" name="ColorFactor" value="40">&nbsp
+	Theta per Step: <input type="text" size="6" name="thetaDelta" value="0.003">&nbsp
+	IAO: <input type="text" size="3" name="IAO" value="0">&nbsp
+      </p>
+    </form>
+    &nbsp <select id="sel1" onchange=selectAnimation(this.value)>
+      <option value="animateToggle">Animation Toggle</option>      
+      <option value="animateOn">Animation On</option>
+      <option value="animateOff">Animation Off</option>
+    </select>
+    Samples: 
+    <select id="sel2"
+            onClick=selectSample(this.value)
+            onChange=selectSample(this.value)>
+      <option value="MTri1">Major Triad 1</option>
+      <option value="MTri2">Major Triad 2</option>
+      <option value="MTri3">Major Triad 3 (Rotation to Linear 1)</option>
+      <option value="mTri1">Minor Triad 1 (Star 5)</option>
+      <option value="mTri2">Minor Triad 2 </option>
+      <option value="mTri3">Minor Triad 3 </option>
+      <option value="mTriInv1">Minor Triad 1st Inv (Star 8) </option>
+      <option value="M7Tri">Major 7 Triad (Star 7)</option>      
+      <option value="RtoL2">Rotation to Linear 2</option>
+      <option value="RtoL3">Rotation to Linear 3</option>
+      <option value="Negative1">Negative 1</option>
+      <option value="Negative2">Negative 2</option>
+      <option value="Negative3">Negative 3</option>      
+    </select>
+    <select id="sel2"
+            onClick=selectSample2(this.value)
+            onChange=selectSample2(this.value)>
+      <option value="m2">Minor 2nd (15:16)</option>      
+      <option value="M2">Major 2nd (8:9)</option>
+      <option value="m3">Minor 3rd (5:6)</option>
+      <option value="M3">Major 3rd (4:5)</option>
+      <option value="4th">4th (3:4)</option>
+      <option value="5th">5th (2:3)</option>
+      <option value="m6">Minor 6th (5:8)</option>
+      <option value="M6">Major 6th (3:5)</option>
+      <option value="m7">Minor 7th (9:16)</option>
+      <option value="M7">Major 7th (8:15)</option>
+    </select>
+    <select id="sel3"
+            onClick=selectSample3(this.value)
+            onChange=selectSample3(this.value)>
+      <option value="s41">Sample 4 circles 1</option>
+      <option value="s42">Sample 4 circles 2</option>
+      <option value="s43">Sample 4 circles 3</option>
+      <option value="s44">Sample 4 circles 4</option>
+      <option value="s45">Sample 4 circles 5</option>	        
+      <option value="fcf1">Fail to find converging point</option>
+      <option value="fcf2">FCF with a long arm</option>      
+      <option value="s2">Bundles</option>
+      <option value="s3">Dense 2 circles</option>
+      <option value="Rosetta">Rosetta Orbit</option>
+      <option value="Rosetta1">Rosetta Orbit 1</option>
+      <option value="Rosetta2">Rosetta Orbit 2</option>
+      <option value="Rosetta3">Rosetta Orbit 3</option>
+      <option value="Rosetta4">Rosetta Orbit 4</option>
+      <option value="Rosetta5">Rosetta Orbit 5</option>
+      <option value="Rosetta6">Rosetta Orbit 6</option>
+      <option value="Rosetta7">Rosetta Orbit 7</option>            
+    </select>    
+    <!-- br -->
+    <button onclick="clickDraw()"><b>Draw</b></button>
+    <button onclick="clickClear()"><b>Clear</a></button>
+    <button onclick="clickPause()">Pause/Resume</button>
+    <button onclick="clickSpeedUp()">Speed Up +10</button>
+    <button onclick="clickSlowDown()">Slow Down -10</button>
+    <!--- button onclick="clickStop()">Stop</button -->
+    <!-- button onclick="clickAnimate()">Animate</button -->    
+    <br>
+    <pre id="statusString"></pre>
+    <center>
+    <canvas></canvas>
+    <script src="canvas-compiled.js"></script>
+    <script src="mcht-compiled.js"></script>
+    <script src="samples-compiled.js"></script>
+  </body>
+</html>

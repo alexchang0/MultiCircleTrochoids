@@ -1,121 +1,335 @@
 <!DOCTYPE html>
-<!---
-    Multi-Circle Trochoid Animation
-    Author: Alexander Y. Chang
-    Copyright (c) 2020
+<!--
+  Multi-Circle Trochoid Animation
+  Author: Alexander Y. Chang
+  Copyright (c) 2020–2024
 -->
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <title>Multi-Circle Trochoid Animation</title>
-    <link rel="shortcut icon" type="image/x-icon" href="mcht-logo765-s.ico" />    
-    <style type="text/css">
-      canvas {
-          border: 1px solid black;
-          background: black;
-      }
-      body {
-          margin: 0;
-          font-family: monospace;
-          line-height: 10px;
-          padding-bottom: 1px;
-          margin-bottom: 1px;
-      }
-      input, textarea {
-          // font-size: 200%;
-          font-family: monospace;
-          margin-bottom: 1px;
-      }
-      p.a {
-          font-family: "Times New Roman", Times, serif;
-      }
-      p.b {
-          font-family: Arial, Helvetica, sans-serif;
-      }
-      p.c {
-          font-family: monospace;
-          line-height: 0px;
-      }
-      div.a {
-          line-height: 10px;
-      }
-      p
-      {
-          margin: 0px;
-          padding: 1;
-      }
-    </style>
-  </head>
-  <body>
-    <center>
-      <div class="a">
-        <h1>Multi-Circle Trochoid Animation</h1>
-        <h3>Copyright &copy; 2024 Alexander Y. Chang. All Rights Reserved.</h3>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Multi-Circle Trochoid Animation</title>
+  <link rel="shortcut icon" type="image/x-icon" href="mcht-logo765-s.ico">
+  <style>
+    /* ── Reset & base ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0e0e0e;
+      --surface:   #161616;
+      --border:    #2a2a2a;
+      --text:      #e8e8e8;
+      --muted:     #888;
+      --accent:    #b060ff;
+      --danger:    #e05555;
+      --radius:    6px;
+      --font:      'Courier New', Courier, monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 12px;
+      line-height: 1.5;
+      padding: 12px 14px 0;
+      overflow-x: hidden;
+    }
+
+    /* ── Header ───────────────────────────────────────────────────── */
+    header {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+    }
+
+    header h1 {
+      font-size: 14px;
+      font-weight: normal;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+    }
+
+    header p {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ── Panel ────────────────────────────────────────────────────── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px 10px;
+      margin-bottom: 8px;
+    }
+
+    .panel-label {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    /* ── Circle grid ──────────────────────────────────────────────── */
+    .circle-table {
+      display: grid;
+      grid-template-columns: 70px repeat(6, 1fr);
+      gap: 4px 6px;
+      align-items: center;
+    }
+
+    .circle-table .th {
+      font-size: 10px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .circle-table .row-label {
+      font-size: 10px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .circle-table .spacer {
+      /* placeholder for circle 0 speed ratio (fixed at 1) */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--border);
+      font-size: 14px;
+    }
+
+    /* ── Param grid ───────────────────────────────────────────────── */
+    .param-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px 10px;
+    }
+
+    .param-item {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .param-item label {
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    /* ── Inputs ───────────────────────────────────────────────────── */
+    input[type="text"] {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 12px;
+      padding: 3px 6px;
+      text-align: center;
+      transition: border-color 0.15s;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    input[type="text"]:disabled {
+      opacity: 0.25;
+      cursor: not-allowed;
+    }
+
+    /* ── Select ───────────────────────────────────────────────────── */
+    select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 11px;
+      padding: 4px 6px;
+      cursor: pointer;
+    }
+
+    select:focus { outline: none; border-color: var(--accent); }
+
+    /* ── Buttons ──────────────────────────────────────────────────── */
+    .toolbar {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    button {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 12px;
+      padding: 5px 12px;
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s;
+    }
+
+    button:hover { background: #222; border-color: #444; }
+
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    button.primary:hover { background: #9a4de0; border-color: #9a4de0; }
+
+    button.danger { color: var(--danger); border-color: var(--danger); }
+    button.danger:hover { background: rgba(224,85,85,0.08); }
+
+    /* ── Selects row ──────────────────────────────────────────────── */
+    .selects-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    /* ── Status bar ───────────────────────────────────────────────── */
+    #statusString {
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 5px 10px;
+      margin-bottom: 8px;
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    /* ── Canvas ───────────────────────────────────────────────────── */
+    canvas {
+      display: block;
+      width: 100%;
+      background: #000;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    /* ── Hint text ────────────────────────────────────────────────── */
+    .hint {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Multi-Circle Trochoid Animation</h1>
+    <p>Copyright &copy; 2024 Alexander Y. Chang &mdash; All rights reserved</p>
+  </header>
+
+  <!-- ── Circle parameters ──────────────────────────────────────── -->
+  <div class="panel">
+    <div class="panel-label">Circle parameters</div>
+
+    <div class="circle-table">
+      <!-- column headers -->
+      <div></div>
+      <div class="th">0</div>
+      <div class="th">1</div>
+      <div class="th">2</div>
+      <div class="th">3</div>
+      <div class="th">4</div>
+      <div class="th">5</div>
+
+      <!-- radius row -->
+      <div class="row-label">Radius</div>
+      <form id="radiusFormID" style="display:contents">
+        <input type="text" name="r0" value="6">
+        <input type="text" name="r1" value="5">
+        <input type="text" name="r2" value="4">
+        <input type="text" name="r3" value="1">
+        <input type="text" name="r4" value="0">
+        <input type="text" name="r5" value="0">
+      </form>
+
+      <!-- speed ratio row -->
+      <div class="row-label">Speed ratio</div>
+      <div class="spacer">&mdash;</div>
+      <form id="speedFormID" style="display:contents">
+        <input type="text" name="s1" value="4">
+        <input type="text" name="s2" value="-3">
+        <input type="text" name="s3" value="0">
+        <input type="text" name="s4" value="0">
+        <input type="text" name="s5" value="0">
+      </form>
+    </div>
+
+    <p class="hint">Radius may be negative. First zero speed ratio terminates the circle sequence.</p>
+  </div>
+
+  <!-- ── Global parameters ──────────────────────────────────────── -->
+  <div class="panel">
+    <div class="panel-label">Parameters</div>
+    <form id="parametersFormID" style="display:contents">
+      <div class="param-grid">
+        <div class="param-item">
+          <label for="pScale">Scale</label>
+          <input type="text" id="pScale" name="scale" value="1">
+        </div>
+        <div class="param-item">
+          <label for="pColor">Color factor</label>
+          <input type="text" id="pColor" name="colorFactor" value="40">
+        </div>
+        <div class="param-item">
+          <label for="pTheta">&theta; per step</label>
+          <input type="text" id="pTheta" name="thetaDelta" value="0.003">
+        </div>
+        <div class="param-item">
+          <label for="pIAO">IAO (&deg;)</label>
+          <input type="text" id="pIAO" name="iao" value="0">
+        </div>
       </div>
-      <hr>
-    </center>
-    <form id="radiusFormID" action="/action_page.php">
-      <p class="c" style="margin-bottom:7px; line-height:1px">&nbsp Circle &nbsp&nbsp0
-        &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp1
-        &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp2
-        &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp3
-        &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp4
-        &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp5
-      </p>
-      <p class="c">
-        &nbsp Radius: <input type="text" size="5" name="radius 1" value="6">&nbsp&nbsp
-      <input type="text" size="5" name="radius 2" value="5">&nbsp&nbsp
-      <input type="text" size="5" name="radius 3" value="4">&nbsp&nbsp
-      <input type="text" size="5" name="radius 4" value="1">&nbsp&nbsp
-      <input type="text" size="5" name="radius 5" value="0">&nbsp&nbsp
-      <input type="text" size="5" name="radius 6" value="0">&nbsp <--- Can be negative
-      </p>
     </form>
-    <form id="speedFormID" action="/action_page.php">
-      <p class="c">
-        &nbsp Speed Ratio: &nbsp&nbsp&nbsp
-        <input type="text" size="5" name="speed 2" value="4">&nbsp&nbsp
-        <input type="text" size="5" name="speed 3" value="-3">&nbsp&nbsp
-        <input type="text" size="5" name="speed 4" value="0">&nbsp&nbsp
-        <input type="text" size="5" name="speed 5" value="0">&nbsp&nbsp
-        <input type="text" size="5" name="speed 6" value="0">&nbsp <--- First zero terminates circle sequence.
-      </p>
-    </form>
-    <form id="parametersFormID" action="/action_page.php">
-      <p>
-        &nbsp Scale: <input type="text" size="3" name="Scale" value="1">&nbsp
-        Color Factor: <input type="text" size="3" name="ColorFactor" value="40">&nbsp
-	Theta per Step: <input type="text" size="6" name="thetaDelta" value="0.003">&nbsp
-	IAO: <input type="text" size="3" name="IAO" value="0">&nbsp
-      </p>
-    </form>
-    &nbsp <select id="sel1" onchange=selectAnimation(this.value)>
-      <option value="animateToggle">Animation Toggle</option>      
-      <option value="animateOn">Animation On</option>
-      <option value="animateOff">Animation Off</option>
+  </div>
+
+  <!-- ── Sample selectors ───────────────────────────────────────── -->
+  <div class="selects-row">
+    <select id="sel1" onchange="selectAnimation(this.value)">
+      <option value="animateToggle">Animation: toggle</option>
+      <option value="animateOn">Animation: on</option>
+      <option value="animateOff">Animation: off</option>
     </select>
-    Samples: 
-    <select id="sel2"
-            onClick=selectSample(this.value)
-            onChange=selectSample(this.value)>
-      <option value="MTri1">Major Triad 1</option>
-      <option value="MTri2">Major Triad 2</option>
-      <option value="MTri3">Major Triad 3 (Rotation to Linear 1)</option>
-      <option value="mTri1">Minor Triad 1 (Star 5)</option>
-      <option value="mTri2">Minor Triad 2 </option>
-      <option value="mTri3">Minor Triad 3 </option>
-      <option value="mTriInv1">Minor Triad 1st Inv (Star 8) </option>
-      <option value="M7Tri">Major 7 Triad (Star 7)</option>      
-      <option value="RtoL2">Rotation to Linear 2</option>
-      <option value="RtoL3">Rotation to Linear 3</option>
+
+    <select id="sel2" onchange="selectSample(this.value)">
+      <option value="MTri1">Major triad 1</option>
+      <option value="MTri2">Major triad 2</option>
+      <option value="MTri3">Major triad 3 (rotation to linear 1)</option>
+      <option value="mTri1">Minor triad 1 (star 5)</option>
+      <option value="mTri2">Minor triad 2</option>
+      <option value="mTri3">Minor triad 3</option>
+      <option value="mTriInv1">Minor triad 1st inv (star 8)</option>
+      <option value="M7Tri">Major 7 triad (star 7)</option>
+      <option value="RtoL2">Rotation to linear 2</option>
+      <option value="RtoL3">Rotation to linear 3</option>
       <option value="Negative1">Negative 1</option>
       <option value="Negative2">Negative 2</option>
-      <option value="Negative3">Negative 3</option>      
+      <option value="Negative3">Negative 3</option>
     </select>
-    <select id="sel2"
-            onClick=selectSample2(this.value)
-            onChange=selectSample2(this.value)>
-      <option value="m2">Minor 2nd (15:16)</option>      
+
+    <select id="sel3" onchange="selectSample2(this.value)">
+      <option value="m2">Minor 2nd (15:16)</option>
       <option value="M2">Major 2nd (8:9)</option>
       <option value="m3">Minor 3rd (5:6)</option>
       <option value="M3">Major 3rd (4:5)</option>
@@ -126,42 +340,46 @@
       <option value="m7">Minor 7th (9:16)</option>
       <option value="M7">Major 7th (8:15)</option>
     </select>
-    <select id="sel3"
-            onClick=selectSample3(this.value)
-            onChange=selectSample3(this.value)>
-      <option value="s41">Sample 4 circles 1</option>
-      <option value="s42">Sample 4 circles 2</option>
-      <option value="s43">Sample 4 circles 3</option>
-      <option value="s44">Sample 4 circles 4</option>
-      <option value="s45">Sample 4 circles 5</option>	        
+
+    <select id="sel4" onchange="selectSample3(this.value)">
+      <option value="s41">4 circles &mdash; sample 1</option>
+      <option value="s42">4 circles &mdash; sample 2</option>
+      <option value="s43">4 circles &mdash; sample 3</option>
+      <option value="s44">4 circles &mdash; sample 4</option>
+      <option value="s45">4 circles &mdash; sample 5</option>
       <option value="fcf1">Fail to find converging point</option>
-      <option value="fcf2">FCF with a long arm</option>      
+      <option value="fcf2">FCF with a long arm</option>
       <option value="s2">Bundles</option>
       <option value="s3">Dense 2 circles</option>
-      <option value="Rosetta">Rosetta Orbit</option>
-      <option value="Rosetta1">Rosetta Orbit 1</option>
-      <option value="Rosetta2">Rosetta Orbit 2</option>
-      <option value="Rosetta3">Rosetta Orbit 3</option>
-      <option value="Rosetta4">Rosetta Orbit 4</option>
-      <option value="Rosetta5">Rosetta Orbit 5</option>
-      <option value="Rosetta6">Rosetta Orbit 6</option>
-      <option value="Rosetta7">Rosetta Orbit 7</option>            
-    </select>    
-    <!-- br -->
-    <button onclick="clickDraw()"><b>Draw</b></button>
-    <button onclick="clickClear()"><b>Clear</a></button>
-    <button onclick="clickPause()">Pause/Resume</button>
-    <button onclick="clickSpeedUp()">Speed Up +10</button>
-    <button onclick="clickSlowDown()">Slow Down -10</button>
-    <button onclick="writeFile()">Write File</button>
-    <!--- button onclick="clickStop()">Stop</button -->
-    <!-- button onclick="clickAnimate()">Animate</button -->    
-    <br>
-    <pre id="statusString"></pre>
-    <center>
-    <canvas></canvas>
-    <script src="canvas.js"></script>
-    <script src="mcht.js"></script>
-    <script src="samples.js"></script>
-  </body>
+      <option value="Rosetta">Rosetta orbit</option>
+      <option value="Rosetta1">Rosetta orbit 1</option>
+      <option value="Rosetta2">Rosetta orbit 2</option>
+      <option value="Rosetta3">Rosetta orbit 3</option>
+      <option value="Rosetta4">Rosetta orbit 4</option>
+      <option value="Rosetta5">Rosetta orbit 5</option>
+      <option value="Rosetta6">Rosetta orbit 6</option>
+      <option value="Rosetta7">Rosetta orbit 7</option>
+    </select>
+  </div>
+
+  <!-- ── Action buttons ─────────────────────────────────────────── -->
+  <div class="toolbar">
+    <button class="primary" onclick="clickDraw()">Draw</button>
+    <button class="danger"  onclick="clickClear()">Clear</button>
+    <button onclick="clickPause()">Pause / Resume</button>
+    <button onclick="clickSpeedUp()">Speed +10</button>
+    <button onclick="clickSlowDown()">Speed &minus;10</button>
+    <button onclick="writeFile()">Write WAV</button>
+  </div>
+
+  <!-- ── Status ─────────────────────────────────────────────────── -->
+  <div id="statusString"></div>
+
+  <!-- ── Canvas ─────────────────────────────────────────────────── -->
+  <canvas></canvas>
+
+  <script src="canvas.js"></script>
+  <script src="mcht.js"></script>
+  <script src="samples.js"></script>
+</body>
 </html>
